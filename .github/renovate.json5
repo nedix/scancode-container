@@ -4,6 +4,13 @@
   ],
   customManagers: [
     {
+      depNameTemplate: "Fedora",
+      fileMatch: ["^Containerfile$"],
+      matchStrings: ["ARG FEDORA_VERSION=(?<currentValue>.*?)\\n"],
+      datasourceTemplate: "github-tags",
+      packageNameTemplate: "nedix/fedora-base-container",
+    },
+    {
       depNameTemplate: "Python",
       fileMatch: ["^Containerfile$"],
       matchStrings: ["ARG PYTHON_VERSION=(?<currentValue>.*?)\\n"],
@@ -26,6 +33,11 @@
     },
   ],
   packageRules: [
+    {
+      description: "Custom versioning for Fedora",
+      matchPackageNames: ["nedix/fedora-base-container"],
+      extractVersion: "^v(?<version>.*)$",
+    },
     {
       description: "Custom versioning for ScanCode.io",
       matchPackageNames: ["aboutcode-org/scancode.io"],
