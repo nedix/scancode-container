@@ -30,6 +30,7 @@ ARG BUILD_DEPENDENCIES_DNF=" \
     meson \
     p7zip \
     p7zip-plugins \
+    poppler-utils \
     python${PYTHON_VERSION}-devel \
     python${PYTHON_VERSION}-libs \
     rust-devicemapper-devel \
@@ -86,6 +87,13 @@ RUN case "$(uname -m)" in \
     && ln -fs /usr/lib64/liblzma.so ./src/extractcode_libarchive/lib/liblzma-la3511.so.5 \
     && ln -fs /usr/lib64/libz.so ./src/extractcode_libarchive/lib/libz-la3511.so.1 \
     && ln -fs /usr/lib64/libzstd.so.1 ./src/extractcode_libarchive/lib/libzstd-la3511.so.1 \
+    && python setup.py release \
+    && pip install "$(find ./dist/ -name *.whl)" \
+    && cd /build/scancode-plugins/builtins/textcode_pdf2text-linux \
+    && sed -E \
+        -e "s|manylinux1_x86_64|manylinux_2_34_${MANYLINUX_ARCHITECTURE}|" \
+        -i ./setup.cfg \
+    && ln -fs /usr/bin/pdftotext ./src/textcode_pdf2text/bin/pdftotext \
     && python setup.py release \
     && pip install "$(find ./dist/ -name *.whl)" \
     && cd /build/scancode-plugins/builtins/typecode_libmagic-linux \
