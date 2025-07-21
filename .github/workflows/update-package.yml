@@ -1,0 +1,26 @@
+name: Update package
+
+on:
+  push:
+    tags: ['*']
+
+permissions:
+  attestations: write
+  id-token: write
+  packages: write
+  security-events: write
+
+jobs:
+  update-package:
+    name: Update package
+    runs-on: ubuntu-latest
+    steps:
+      - id: update-package
+        name: Update package
+        uses: nedix/actions/update-package@main
+        with:
+          platforms: linux/amd64,linux/arm64/v8
+          registry: ${{ secrets.REGISTRY_DOMAIN }}
+          registry_path: ${{ secrets.REGISTRY_PATH }}
+          registry_username: ${{ secrets.REGISTRY_USERNAME }}
+          registry_password: ${{ secrets.REGISTRY_PASSWORD }}

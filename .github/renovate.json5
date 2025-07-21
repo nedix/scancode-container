@@ -1,0 +1,78 @@
+{
+  extends: [
+    "https://raw.githubusercontent.com/nedix/actions/main/renovate.json5",
+  ],
+  customManagers: [
+    {
+      depNameTemplate: "Alpine",
+      fileMatch: ["^Containerfile$"],
+      matchStrings: ["ARG ALPINE_VERSION=(?<currentValue>.*?)\\n"],
+      datasourceTemplate: "docker",
+      packageNameTemplate: "alpine",
+    },
+    {
+      depNameTemplate: "ExtractCode",
+      fileMatch: ["^Containerfile$"],
+      matchStrings: ["ARG EXTRACTCODE_VERSION=(?<currentValue>.*?)\\n"],
+      datasourceTemplate: "",
+      packageNameTemplate: "",
+    },
+    {
+      depNameTemplate: "Lief",
+      fileMatch: ["^Containerfile$"],
+      matchStrings: ["ARG LIEF_VERSION=(?<currentValue>.*?)\\n"],
+      datasourceTemplate: "",
+      packageNameTemplate: "",
+    },
+    {
+      depNameTemplate: "Python",
+      fileMatch: ["^Containerfile$"],
+      matchStrings: ["ARG PYTHON_VERSION=(?<currentValue>.*?)\\n"],
+      datasourceTemplate: "",
+      packageNameTemplate: "",
+    },
+    {
+      depNameTemplate: "ScanCode.io",
+      fileMatch: ["^Containerfile$"],
+      matchStrings: ["ARG SCANCODE_IO_VERSION=(?<currentValue>.*?)\\n"],
+      datasourceTemplate: "",
+      packageNameTemplate: "",
+    },
+    {
+      depNameTemplate: "ScanCode Plugins",
+      fileMatch: ["^Containerfile$"],
+      matchStrings: ["ARG SCANCODE_PLUGINS_VERSION=(?<currentValue>.*?)\\n"],
+      datasourceTemplate: "",
+      packageNameTemplate: "",
+    },
+    {
+      depNameTemplate: "Tree-sitter-bash",
+      fileMatch: ["^Containerfile$"],
+      matchStrings: ["ARG TREE_SITTER_BASH_VERSION=(?<currentValue>.*?)\\n"],
+      datasourceTemplate: "",
+      packageNameTemplate: "",
+    },
+  ],
+  packageRules: [
+    {
+      description: "Custom versioning for ExtractCode",
+      matchPackageNames: ["aboutcode-org/extractcode"],
+      extractVersion: "^v(?<version>.*)$",
+    },
+    {
+      description: "Custom versioning for ScanCode.io",
+      matchPackageNames: [""],
+      extractVersion: "^v(?<version>.*)$",
+    },
+    {
+      description: "Custom versioning for ScanCode Plugins",
+      matchPackageNames: [""],
+      extractVersion: "^v(?<version>.*)$"
+    },
+    {
+      description: "Custom versioning for Tree-sitter-bash",
+      matchPackageNames: [""],
+      extractVersion: "^v(?<version>.*)$",
+    },
+  ],
+}
