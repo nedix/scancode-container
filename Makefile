@@ -4,3 +4,6 @@ setup:
 shell:
 	@docker run --rm -it --name="scancode" \
 		scancode
+
+test:
+	@$(CURDIR)/tests/index.sh
