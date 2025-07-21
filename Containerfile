@@ -1,0 +1,198 @@
+ARG FEDORA_VERSION=42
+ARG PYTHON_VERSION=3.13
+ARG SCANCODE_IO_VERSION=35.1.0
+ARG SCANCODE_PLUGINS_VERSION=1.0.1
+
+FROM ghcr.io/nedix/fedora-base-container:${FEDORA_VERSION} AS base
+
+ARG FEDORA_VERSION
+
+RUN sed -E \
+        -e "s|(\[main\])|\1\ndeltarpm=1|" \
+        -e "s|(\[main\])|\1\nfastestmirror=1|" \
+        -e "s|(\[main\])|\1\ninstall_weak_deps=0|" \
+        -e "s|(\[main\])|\1\nmax_parallel_downloads=10|" \
+        -e "s|(\[main\])|\1\nmetadata_expire=-1|" \
+        -i /etc/dnf/dnf.conf \
+    && dnf install -y \
+        dnf5-plugins \
+        "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${FEDORA_VERSION}.noarch.rpm" \
+    && for PREVIOUS_FEDORA_VERSION in $(seq $(( FEDORA_VERSION - 2 )) "$FEDORA_VERSION"); do \
+        sed -E \
+            -e "s|\\\$releasever|${PREVIOUS_FEDORA_VERSION}|g" \
+            -e "s|^\[fedora|\[fedora-${PREVIOUS_FEDORA_VERSION}|g" \
+            /etc/yum.repos.d/fedora.repo \
+            > "/etc/yum.repos.d/fedora-${PREVIOUS_FEDORA_VERSION}.repo" \
+        && dnf config-manager setopt "fedora-${PREVIOUS_FEDORA_VERSION}.enabled=1" \
+        && sed -E \
+            -e "s|\\\$releasever|${PREVIOUS_FEDORA_VERSION}|g" \
+            -e "s|^\[updates|\[fedora-${PREVIOUS_FEDORA_VERSION}-updates|g" \
+            /etc/yum.repos.d/fedora-updates.repo \
+            > "/etc/yum.repos.d/fedora-${PREVIOUS_FEDORA_VERSION}-updates.repo" \
+        && dnf config-manager setopt "fedora-${PREVIOUS_FEDORA_VERSION}-updates.enabled=1" \
+        && sed -E \
+            -e "s|\\\$releasever|${PREVIOUS_FEDORA_VERSION}|g" \
+            -e "s|^\[rpmfusion-free|\[fedora-${PREVIOUS_FEDORA_VERSION}-rpmfusion-free|g" \
+            /etc/yum.repos.d/rpmfusion-free.repo \
+            > "/etc/yum.repos.d/fedora-${PREVIOUS_FEDORA_VERSION}-rpmfusion-free.repo" \
+        && dnf config-manager setopt "fedora-${PREVIOUS_FEDORA_VERSION}-rpmfusion-free.enabled=1" \
+        && sed -E \
+            -e "s|\\\$releasever|${PREVIOUS_FEDORA_VERSION}|g" \
+            -e "s|^\[rpmfusion-free-updates|\[fedora-${PREVIOUS_FEDORA_VERSION}-rpmfusion-free-updates|g" \
+            /etc/yum.repos.d/rpmfusion-free-updates.repo \
+            > "/etc/yum.repos.d/fedora-${PREVIOUS_FEDORA_VERSION}-rpmfusion-free-updates.repo" \
+        && dnf config-manager setopt "fedora-${PREVIOUS_FEDORA_VERSION}-rpmfusion-free-updates.enabled=1" \
+    ; done \
+    && dnf config-manager setopt "fedora-cisco-openh264.enabled=0" \
+    && dnf config-manager setopt "fedora.enabled=0" \
+    && dnf config-manager setopt "updates.enabled=0" \
+    && dnf config-manager setopt "updates-testing.enabled=0" \
+    && dnf config-manager setopt "rpmfusion-free.enabled=0" \
+    && dnf config-manager setopt "rpmfusion-free-updates.enabled=0" \
+    && dnf config-manager setopt "rpmfusion-free-updates-testing.enabled=0" \
+    && rm \
+        /etc/yum.repos.d/fedora-cisco-openh264.repo \
+        /etc/yum.repos.d/fedora.repo \
+        /etc/yum.repos.d/fedora-updates.repo \
+        /etc/yum.repos.d/fedora-updates-testing.repo \
+        /etc/yum.repos.d/rpmfusion-free.repo \
+        /etc/yum.repos.d/rpmfusion-free-updates.repo \
+        /etc/yum.repos.d/rpmfusion-free-updates-testing.repo \
+    && dnf makecache --refresh
+
+FROM base
+
+ARG PYTHON_VERSION
+
+ARG BUILD_DEPENDENCIES_DNF=" \
+    bison \
+    bzip2-devel \
+    cargo \
+    expat-devel \
+    file-libs \
+    git \
+    golang \
+    gpgme-devel \
+    gzip \
+    libarchive-devel \
+    libb2-devel \
+    libgcab1-devel \
+    libgsf-devel \
+    lz4-devel \
+    make \
+    meson \
+    p7zip \
+    p7zip-plugins \
+    python${PYTHON_VERSION}-devel \
+    python${PYTHON_VERSION}-libs \
+    rust-devicemapper-devel \
+    tar \
+    unzip \
+    vala \
+    wget \
+    xz-devel \
+    zlib-ng-compat-devel \
+"
+
+ARG BUILD_DEPENDENCIES_PIP=" \
+    setuptools \
+    wheel \
+"
+
+RUN dnf install -y \
+        "python${PYTHON_VERSION}" \
+        python3-pip \
+        $BUILD_DEPENDENCIES_DNF \
+    && ln -s /usr/bin/python3 /usr/bin/python \
+    && pip install $BUILD_DEPENDENCIES_PIP
+
+WORKDIR /build/scancode-plugins/
+
+ARG SCANCODE_PLUGINS_VERSION
+
+RUN case "$(uname -m)" in \
+        aarch64) \
+            MANYLINUX_ARCHITECTURE="aarch64" \
+        ;; x86_64) \
+            MANYLINUX_ARCHITECTURE="x86_64" \
+        ;; *) echo "Unsupported architecture: $(uname -m)"; exit 1; ;; \
+    esac \
+    && wget -qO- "https://github.com/aboutcode-org/scancode-plugins/tarball/v${SCANCODE_PLUGINS_VERSION}" \
+    | tar -xpzf- --strip-components=1 \
+    && cd /build/scancode-plugins/builtins/extractcode_7z-linux \
+    && sed -E \
+        -e "s|manylinux1_x86_64|manylinux_2_34_${MANYLINUX_ARCHITECTURE}|" \
+        -i ./setup.cfg \
+    && ln -fs /usr/bin/7z /build/scancode-plugins/builtins/extractcode_7z-linux/src/extractcode_7z/bin/7z \
+    && ln -fs /usr/libexec/p7zip/7z.so /build/scancode-plugins/builtins/extractcode_7z-linux/src/extractcode_7z/bin/7z.so \
+    && python setup.py release \
+    && pip install \
+        "./dist/extractcode_7z-16.5.210531-py3-none-manylinux_2_34_${MANYLINUX_ARCHITECTURE}.whl" \
+    && cd /build/scancode-plugins/builtins/extractcode_libarchive-linux \
+    && sed -E \
+        -e "s|manylinux1_x86_64|manylinux_2_34_${MANYLINUX_ARCHITECTURE}|" \
+        -i ./setup.cfg \
+    && ln -fs /usr/lib64/libarchive.so /build/scancode-plugins/builtins/extractcode_libarchive-linux/src/extractcode_libarchive/lib/libarchive.so \
+    && ln -fs /usr/lib64/libb2.so /build/scancode-plugins/builtins/extractcode_libarchive-linux/src/extractcode_libarchive/lib/libb2-la3511.so.1 \
+    && ln -fs /usr/lib64/libbz2.so /build/scancode-plugins/builtins/extractcode_libarchive-linux/src/extractcode_libarchive/lib/libbz2-la3511.so.1.0 \
+    && ln -fs /usr/lib64/libexpat.so /build/scancode-plugins/builtins/extractcode_libarchive-linux/src/extractcode_libarchive/lib/libexpat-la3511.so.1 \
+    && ln -fs /usr/lib64/liblz4.so /build/scancode-plugins/builtins/extractcode_libarchive-linux/src/extractcode_libarchive/lib/liblz4-la3511.so.1 \
+    && ln -fs /usr/lib64/liblzma.so /build/scancode-plugins/builtins/extractcode_libarchive-linux/src/extractcode_libarchive/lib/liblzma-la3511.so.5 \
+    && ln -fs /usr/lib64/libz.so /build/scancode-plugins/builtins/extractcode_libarchive-linux/src/extractcode_libarchive/lib/libz-la3511.so.1 \
+    && ln -fs /usr/lib64/libzstd.so.1 /build/scancode-plugins/builtins/extractcode_libarchive-linux/src/extractcode_libarchive/lib/libzstd-la3511.so.1 \
+    && python setup.py release \
+    && pip install \
+        "./dist/extractcode_libarchive-3.5.1.210531-py3-none-manylinux_2_34_${MANYLINUX_ARCHITECTURE}.whl" \
+    && cd /build/scancode-plugins/builtins/typecode_libmagic-linux \
+    && sed -E \
+        -e "s|manylinux1_x86_64|manylinux_2_34_${MANYLINUX_ARCHITECTURE}|" \
+        -i ./setup.cfg \
+    && ln -fs /usr/share/misc/magic.mgc /build/scancode-plugins/builtins/typecode_libmagic-linux/src/typecode_libmagic/data/magic.mgc \
+    && ln -fs /usr/lib64/libmagic.so /build/scancode-plugins/builtins/typecode_libmagic-linux/src/typecode_libmagic/lib/libmagic.so \
+    && ln -fs /usr/lib64/libz.so /build/scancode-plugins/builtins/typecode_libmagic-linux/src/typecode_libmagic/lib/libz-lm539.so.1 \
+    && python setup.py release \
+    && pip install \
+        "./dist/typecode_libmagic-5.39.210531-py3-none-manylinux_2_34_${MANYLINUX_ARCHITECTURE}.whl"
+
+WORKDIR /build/scancode/
+
+ARG SCANCODE_IO_VERSION
+
+RUN SCANCODE_IO_PYPROJECT_TOML_FILE=$(wget -qO- "https://raw.githubusercontent.com/aboutcode-org/scancode.io/refs/tags/v${SCANCODE_IO_VERSION}/pyproject.toml") \
+    && SOURCE_INSPECTOR_VERSION=$(echo "$SCANCODE_IO_PYPROJECT_TOML_FILE" | sed -nE 's|^.*source-inspector==([0-9.]+).*|\1|p') \
+    && SOURCE_INSPECTOR_SETUP_CFG_FILE=$(wget -qO- "https://raw.githubusercontent.com/aboutcode-org/source-inspector/refs/tags/v${SOURCE_INSPECTOR_VERSION}/setup.cfg") \
+    && TREE_SITTER_BASH_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-bash==([0-9.]+).*|\1|p') \
+    && TREE_SITTER_CPP_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-cpp==([0-9.]+).*|\1|p') \
+    && TREE_SITTER_C_SHARP_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-c-sharp==([0-9.]+).*|\1|p') \
+    && TREE_SITTER_C_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-c==([0-9.]+).*|\1|p') \
+    && TREE_SITTER_GO_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-go==([0-9.]+).*|\1|p') \
+    && TREE_SITTER_JAVASCRIPT_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-javascript==([0-9.]+).*|\1|p') \
+    && TREE_SITTER_JAVA_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-java==([0-9.]+).*|\1|p') \
+    && TREE_SITTER_OBJC_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-objc==([0-9.]+).*|\1|p') \
+    && TREE_SITTER_PYTHON_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-python==([0-9.]+).*|\1|p') \
+    && TREE_SITTER_RUST_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-rust==([0-9.]+).*|\1|p') \
+    && TREE_SITTER_SWIFT_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*py-tree-sitter-swift==([0-9.]+).*|\1|p') \
+    && TREE_SITTER_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter==([0-9.]+).*|\1|p') \
+    && pip install \
+        "git+https://github.com/aboutcode-org/scancode.io.git@v${SCANCODE_IO_VERSION}" \
+        "git+https://github.com/aboutcode-org/tree-sitter-swift-wheel.git@v${TREE_SITTER_SWIFT_VERSION}" \
+        "git+https://github.com/tree-sitter-grammars/tree-sitter-objc.git@v${TREE_SITTER_OBJC_VERSION}" \
+        "git+https://github.com/tree-sitter/py-tree-sitter.git@v${TREE_SITTER_VERSION}" \
+        "git+https://github.com/tree-sitter/tree-sitter-bash.git@v${TREE_SITTER_BASH_VERSION}" \
+        "git+https://github.com/tree-sitter/tree-sitter-c-sharp.git@v${TREE_SITTER_C_SHARP_VERSION}" \
+        "git+https://github.com/tree-sitter/tree-sitter-c.git@v${TREE_SITTER_C_VERSION}" \
+        "git+https://github.com/tree-sitter/tree-sitter-cpp.git@v${TREE_SITTER_CPP_VERSION}" \
+        "git+https://github.com/tree-sitter/tree-sitter-go.git@v${TREE_SITTER_GO_VERSION}" \
+        "git+https://github.com/tree-sitter/tree-sitter-java.git@v${TREE_SITTER_JAVA_VERSION}" \
+        "git+https://github.com/tree-sitter/tree-sitter-javascript.git@v${TREE_SITTER_JAVASCRIPT_VERSION}" \
+        "git+https://github.com/tree-sitter/tree-sitter-python.git@v${TREE_SITTER_PYTHON_VERSION}" \
+        "git+https://github.com/tree-sitter/tree-sitter-rust.git@v${TREE_SITTER_RUST_VERSION}"
+
+RUN dnf remove -y "$BUILD_DEPENDENCIES_DNF" \
+    && dnf clean all \
+    && pip uninstall -y $BUILD_DEPENDENCIES_PIP \
+    && rm -rf /build/
+
+WORKDIR /project/
+
+ENTRYPOINT ["/bin/sh"]
