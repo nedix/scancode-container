@@ -30,6 +30,7 @@ ARG BUILD_DEPENDENCIES_DNF=" \
     meson \
     p7zip \
     p7zip-plugins \
+    poppler-utils \
     python${PYTHON_VERSION}-devel \
     python${PYTHON_VERSION}-libs \
     rust-devicemapper-devel \
@@ -70,36 +71,33 @@ RUN case "$(uname -m)" in \
     && sed -E \
         -e "s|manylinux1_x86_64|manylinux_2_34_${MANYLINUX_ARCHITECTURE}|" \
         -i ./setup.cfg \
-    && ln -fs /usr/bin/7z /build/scancode-plugins/builtins/extractcode_7z-linux/src/extractcode_7z/bin/7z \
-    && ln -fs /usr/libexec/p7zip/7z.so /build/scancode-plugins/builtins/extractcode_7z-linux/src/extractcode_7z/bin/7z.so \
+    && ln -fs /usr/bin/7z ./src/extractcode_7z/bin/7z \
+    && ln -fs /usr/libexec/p7zip/7z.so ./src/extractcode_7z/bin/7z.so \
     && python setup.py release \
-    && pip install \
-        "./dist/extractcode_7z-16.5.210531-py3-none-manylinux_2_34_${MANYLINUX_ARCHITECTURE}.whl" \
+    && pip install $(find ./dist/ -name "*.whl") \
     && cd /build/scancode-plugins/builtins/extractcode_libarchive-linux \
     && sed -E \
         -e "s|manylinux1_x86_64|manylinux_2_34_${MANYLINUX_ARCHITECTURE}|" \
         -i ./setup.cfg \
-    && ln -fs /usr/lib64/libarchive.so /build/scancode-plugins/builtins/extractcode_libarchive-linux/src/extractcode_libarchive/lib/libarchive.so \
-    && ln -fs /usr/lib64/libb2.so /build/scancode-plugins/builtins/extractcode_libarchive-linux/src/extractcode_libarchive/lib/libb2-la3511.so.1 \
-    && ln -fs /usr/lib64/libbz2.so /build/scancode-plugins/builtins/extractcode_libarchive-linux/src/extractcode_libarchive/lib/libbz2-la3511.so.1.0 \
-    && ln -fs /usr/lib64/libexpat.so /build/scancode-plugins/builtins/extractcode_libarchive-linux/src/extractcode_libarchive/lib/libexpat-la3511.so.1 \
-    && ln -fs /usr/lib64/liblz4.so /build/scancode-plugins/builtins/extractcode_libarchive-linux/src/extractcode_libarchive/lib/liblz4-la3511.so.1 \
-    && ln -fs /usr/lib64/liblzma.so /build/scancode-plugins/builtins/extractcode_libarchive-linux/src/extractcode_libarchive/lib/liblzma-la3511.so.5 \
-    && ln -fs /usr/lib64/libz.so /build/scancode-plugins/builtins/extractcode_libarchive-linux/src/extractcode_libarchive/lib/libz-la3511.so.1 \
-    && ln -fs /usr/lib64/libzstd.so.1 /build/scancode-plugins/builtins/extractcode_libarchive-linux/src/extractcode_libarchive/lib/libzstd-la3511.so.1 \
+    && ln -fs /usr/lib/libarchive.so ./src/extractcode_libarchive/lib/libarchive.so \
+    && ln -fs /usr/lib/libb2.so ./src/extractcode_libarchive/lib/libb2-la3511.so.1 \
+    && ln -fs /usr/lib/libbz2.so ./src/extractcode_libarchive/lib/libbz2-la3511.so.1.0 \
+    && ln -fs /usr/lib/libexpat.so ./src/extractcode_libarchive/lib/libexpat-la3511.so.1 \
+    && ln -fs /usr/lib/liblz4.so ./src/extractcode_libarchive/lib/liblz4-la3511.so.1 \
+    && ln -fs /usr/lib/liblzma.so ./src/extractcode_libarchive/lib/liblzma-la3511.so.5 \
+    && ln -fs /usr/lib/libz.so ./src/extractcode_libarchive/lib/libz-la3511.so.1 \
+    && ln -fs /usr/lib/libzstd.so.1 ./src/extractcode_libarchive/lib/libzstd-la3511.so.1 \
     && python setup.py release \
-    && pip install \
-        "./dist/extractcode_libarchive-3.5.1.210531-py3-none-manylinux_2_34_${MANYLINUX_ARCHITECTURE}.whl" \
+    && pip install $(find ./dist/ -name "*.whl") \
     && cd /build/scancode-plugins/builtins/typecode_libmagic-linux \
     && sed -E \
         -e "s|manylinux1_x86_64|manylinux_2_34_${MANYLINUX_ARCHITECTURE}|" \
         -i ./setup.cfg \
-    && ln -fs /usr/share/misc/magic.mgc /build/scancode-plugins/builtins/typecode_libmagic-linux/src/typecode_libmagic/data/magic.mgc \
-    && ln -fs /usr/lib64/libmagic.so /build/scancode-plugins/builtins/typecode_libmagic-linux/src/typecode_libmagic/lib/libmagic.so \
-    && ln -fs /usr/lib64/libz.so /build/scancode-plugins/builtins/typecode_libmagic-linux/src/typecode_libmagic/lib/libz-lm539.so.1 \
+    && ln -fs /usr/share/misc/magic.mgc ./src/typecode_libmagic/data/magic.mgc \
+    && ln -fs /usr/lib/libmagic.so ./src/typecode_libmagic/lib/libmagic.so \
+    && ln -fs /usr/lib/libz.so ./src/typecode_libmagic/lib/libz-lm539.so.1 \
     && python setup.py release \
-    && pip install \
-        "./dist/typecode_libmagic-5.39.210531-py3-none-manylinux_2_34_${MANYLINUX_ARCHITECTURE}.whl"
+    && pip install $(find ./dist/ -name "*.whl")
 
 WORKDIR /build/scancode/
 
