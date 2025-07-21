@@ -20,7 +20,3 @@ jobs:
         uses: nedix/actions/update-package@main
         with:
           platforms: linux/amd64,linux/arm64/v8
-          registry: ${{ secrets.REGISTRY_DOMAIN }}
-          registry_path: ${{ secrets.REGISTRY_PATH }}
-          registry_username: ${{ secrets.REGISTRY_USERNAME }}
-          registry_password: ${{ secrets.REGISTRY_PASSWORD }}
