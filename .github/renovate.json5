@@ -34,11 +34,6 @@
   ],
   packageRules: [
     {
-      description: "Custom versioning for Fedora",
-      matchPackageNames: ["nedix/fedora-base-container"],
-      extractVersion: "^v(?<version>.*)$",
-    },
-    {
       description: "Custom versioning for ScanCode.io",
       matchPackageNames: ["aboutcode-org/scancode.io"],
       extractVersion: "^v(?<version>.*)$",
