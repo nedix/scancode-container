@@ -3,11 +3,9 @@ ARG PYTHON_VERSION=3.13
 ARG SCANCODE_IO_VERSION=35.1.0
 ARG SCANCODE_PLUGINS_VERSION=1.0.1
 
-FROM ghcr.io/nedix/fedora-base-container:${FEDORA_VERSION} AS base
+FROM ghcr.io/nedix/fedora-base-container:${FEDORA_VERSION}
 
 RUN dnf makecache --refresh
-
-FROM base
 
 ARG PYTHON_VERSION
 
@@ -30,7 +28,6 @@ ARG BUILD_DEPENDENCIES_DNF=" \
     meson \
     p7zip \
     p7zip-plugins \
-    poppler-utils \
     python${PYTHON_VERSION}-devel \
     python${PYTHON_VERSION}-libs \
     rust-devicemapper-devel \
