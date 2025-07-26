@@ -46,9 +46,9 @@ ARG BUILD_DEPENDENCIES_PIP=" \
 
 RUN dnf install -y \
         "python${PYTHON_VERSION}" \
-        python3-pip \
+        "python${PYTHON_VERSION%%.*}-pip" \
         $BUILD_DEPENDENCIES_DNF \
-    && ln -s /usr/bin/python3 /usr/bin/python \
+    && ln -s "/usr/bin/python${PYTHON_VERSION%%.*}" /usr/bin/python \
     && pip install $BUILD_DEPENDENCIES_PIP
 
 WORKDIR /build/scancode-plugins/
