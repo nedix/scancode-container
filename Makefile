@@ -1,7 +1,7 @@
 setup:
 	@docker build --progress=plain -f Containerfile -t scancode .
 
-shell:
+run:
 	@docker run --rm -it --name="scancode" \
 		scancode
 
