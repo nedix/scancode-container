@@ -113,11 +113,9 @@ RUN SCANCODE_IO_PYPROJECT_TOML_FILE=$(wget -qO- "https://raw.githubusercontent.c
     && TREE_SITTER_OBJC_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-objc==([0-9.]+).*|\1|p') \
     && TREE_SITTER_PYTHON_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-python==([0-9.]+).*|\1|p') \
     && TREE_SITTER_RUST_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-rust==([0-9.]+).*|\1|p') \
-    && TREE_SITTER_SWIFT_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*py-tree-sitter-swift==([0-9.]+).*|\1|p') \
     && TREE_SITTER_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter==([0-9.]+).*|\1|p') \
     && pip install \
         "git+https://github.com/aboutcode-org/scancode.io.git@v${SCANCODE_IO_VERSION}" \
-        "git+https://github.com/aboutcode-org/tree-sitter-swift-wheel.git@v${TREE_SITTER_SWIFT_VERSION}" \
         "git+https://github.com/tree-sitter-grammars/tree-sitter-objc.git@v${TREE_SITTER_OBJC_VERSION}" \
         "git+https://github.com/tree-sitter/py-tree-sitter.git@v${TREE_SITTER_VERSION}" \
         "git+https://github.com/tree-sitter/tree-sitter-bash.git@v${TREE_SITTER_BASH_VERSION}" \
