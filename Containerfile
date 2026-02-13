@@ -46,6 +46,7 @@ ARG BUILD_DEPENDENCIES_PIP=" \
 
 RUN dnf install -y \
         "python${PYTHON_VERSION}" \
+        "python${PYTHON_VERSION%%.*}-dev" \
         "python${PYTHON_VERSION%%.*}-pip" \
         $BUILD_DEPENDENCIES_DNF \
     && ln -s "/usr/bin/python${PYTHON_VERSION%%.*}" /usr/bin/python \
