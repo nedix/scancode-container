@@ -28,8 +28,9 @@ ARG BUILD_DEPENDENCIES_DNF=" \
     meson \
     p7zip \
     p7zip-plugins \
-    python${PYTHON_VERSION}-devel \
-    python${PYTHON_VERSION}-libs \
+    python${PYTHON_VERSION%%.*}-devel \
+    python${PYTHON_VERSION%%.*}-libs \
+    python${PYTHON_VERSION%%.*}-pip \
     rust-devicemapper-devel \
     tar \
     unzip \
@@ -44,9 +45,8 @@ ARG BUILD_DEPENDENCIES_PIP=" \
     wheel \
 "
 
-RUN dnf install -y \
+RUN dnf install -y  \
         "python${PYTHON_VERSION}" \
-        "python${PYTHON_VERSION%%.*}-pip" \
         $BUILD_DEPENDENCIES_DNF \
     && ln -s "/usr/bin/python${PYTHON_VERSION%%.*}" /usr/bin/python \
     && pip install $BUILD_DEPENDENCIES_PIP
