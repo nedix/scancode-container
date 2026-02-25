@@ -41,7 +41,7 @@
     {
       description: "Custom versioning for ScanCode Plugins",
       matchPackageNames: ["aboutcode-org/scancode-plugins"],
-      extractVersion: "^v(?<version>.*)$"
+      extractVersion: "^v(?<version>.*)$",
     },
   ],
 }
