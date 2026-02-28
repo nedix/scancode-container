@@ -13,7 +13,7 @@ Command: `make setup`
 
 Run and attach an interactive shell to the container.
 
-Command: `make shell`
+Command: `make run`
 
 
 ### Test
