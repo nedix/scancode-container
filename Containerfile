@@ -101,20 +101,20 @@ WORKDIR /build/scancode/
 ARG SCANCODE_IO_VERSION
 
 RUN SCANCODE_IO_PYPROJECT_TOML_FILE=$(wget -qO- "https://raw.githubusercontent.com/aboutcode-org/scancode.io/refs/tags/v${SCANCODE_IO_VERSION}/pyproject.toml") \
-    && SOURCE_INSPECTOR_VERSION=$(echo "$SCANCODE_IO_PYPROJECT_TOML_FILE" | sed -nE 's|^.*source-inspector==([0-9.]+).*|\1|p') \
+    && SOURCE_INSPECTOR_VERSION=$(echo "$SCANCODE_IO_PYPROJECT_TOML_FILE" | sed -nE "s|^.*source-inspector==([0-9.]+).*|\1|p") \
     && SOURCE_INSPECTOR_SETUP_CFG_FILE=$(wget -qO- "https://raw.githubusercontent.com/aboutcode-org/source-inspector/refs/tags/v${SOURCE_INSPECTOR_VERSION}/setup.cfg") \
-    && TREE_SITTER_BASH_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-bash==([0-9.]+).*|\1|p') \
-    && TREE_SITTER_CPP_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-cpp==([0-9.]+).*|\1|p') \
-    && TREE_SITTER_C_SHARP_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-c-sharp==([0-9.]+).*|\1|p') \
-    && TREE_SITTER_C_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-c==([0-9.]+).*|\1|p') \
-    && TREE_SITTER_GO_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-go==([0-9.]+).*|\1|p') \
-    && TREE_SITTER_JAVASCRIPT_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-javascript==([0-9.]+).*|\1|p') \
-    && TREE_SITTER_JAVA_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-java==([0-9.]+).*|\1|p') \
-    && TREE_SITTER_OBJC_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-objc==([0-9.]+).*|\1|p') \
-    && TREE_SITTER_PYTHON_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-python==([0-9.]+).*|\1|p') \
-    && TREE_SITTER_RUST_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-rust==([0-9.]+).*|\1|p') \
-    && TREE_SITTER_SWIFT_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter-swift==([0-9.]+).*|\1|p') \
-    && TREE_SITTER_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE 's|^.*tree-sitter==([0-9.]+).*|\1|p') \
+    && TREE_SITTER_BASH_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-bash==([0-9.]+).*|\1|p") \
+    && TREE_SITTER_CPP_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-cpp==([0-9.]+).*|\1|p") \
+    && TREE_SITTER_C_SHARP_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-c-sharp==([0-9.]+).*|\1|p") \
+    && TREE_SITTER_C_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-c==([0-9.]+).*|\1|p") \
+    && TREE_SITTER_GO_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-go==([0-9.]+).*|\1|p") \
+    && TREE_SITTER_JAVASCRIPT_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-javascript==([0-9.]+).*|\1|p") \
+    && TREE_SITTER_JAVA_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-java==([0-9.]+).*|\1|p") \
+    && TREE_SITTER_OBJC_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-objc==([0-9.]+).*|\1|p") \
+    && TREE_SITTER_PYTHON_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-python==([0-9.]+).*|\1|p") \
+    && TREE_SITTER_RUST_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-rust==([0-9.]+).*|\1|p") \
+    && TREE_SITTER_SWIFT_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-swift==([0-9.]+).*|\1|p") \
+    && TREE_SITTER_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter==([0-9.]+).*|\1|p") \
     && pip install \
         "git+https://github.com/aboutcode-org/scancode.io.git@v${SCANCODE_IO_VERSION}" \
         "git+https://github.com/aboutcode-org/tree-sitter-swift-wheel.git@v${TREE_SITTER_SWIFT_VERSION}" \
@@ -137,4 +137,4 @@ RUN dnf remove -y "$BUILD_DEPENDENCIES_DNF" \
 
 WORKDIR /project/
 
-ENTRYPOINT ["/bin/sh"]
+ENTRYPOINT ["/usr/local/bin/scancode"]
