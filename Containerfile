@@ -101,34 +101,10 @@ WORKDIR /build/scancode/
 ARG SCANCODE_IO_VERSION
 
 RUN SCANCODE_IO_PYPROJECT_TOML_FILE=$(wget -qO- "https://raw.githubusercontent.com/aboutcode-org/scancode.io/refs/tags/v${SCANCODE_IO_VERSION}/pyproject.toml") \
-    && SOURCE_INSPECTOR_VERSION=$(echo "$SCANCODE_IO_PYPROJECT_TOML_FILE" | sed -nE "s|^.*source-inspector[=<>]{1,2}([0-9.]+).*|\1|p") \
-    && SOURCE_INSPECTOR_SETUP_CFG_FILE=$(wget -qO- "https://raw.githubusercontent.com/aboutcode-org/source-inspector/refs/tags/v${SOURCE_INSPECTOR_VERSION}/setup.cfg") \
-    && TREE_SITTER_BASH_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-bash[=<>]{1,2}([0-9.]+).*|\1|p") \
-    && TREE_SITTER_CPP_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-cpp[=<>]{1,2}([0-9.]+).*|\1|p") \
-    && TREE_SITTER_C_SHARP_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-c-sharp[=<>]{1,2}([0-9.]+).*|\1|p") \
-    && TREE_SITTER_C_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-c[=<>]{1,2}([0-9.]+).*|\1|p") \
-    && TREE_SITTER_GO_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-go[=<>]{1,2}([0-9.]+).*|\1|p") \
-    && TREE_SITTER_JAVASCRIPT_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-javascript[=<>]{1,2}([0-9.]+).*|\1|p") \
-    && TREE_SITTER_JAVA_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-java[=<>]{1,2}([0-9.]+).*|\1|p") \
-    && TREE_SITTER_OBJC_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-objc[=<>]{1,2}([0-9.]+).*|\1|p") \
-    && TREE_SITTER_PYTHON_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-python[=<>]{1,2}([0-9.]+).*|\1|p") \
-    && TREE_SITTER_RUST_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-rust[=<>]{1,2}([0-9.]+).*|\1|p") \
-    && TREE_SITTER_SWIFT_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter-swift[=<>]{1,2}([0-9.]+).*|\1|p") \
-    && TREE_SITTER_VERSION=$(echo "$SOURCE_INSPECTOR_SETUP_CFG_FILE" | sed -nE "s|^.*tree-sitter[=<>]{1,2}([0-9.]+).*|\1|p") \
-    && pip install \
-        "git+https://github.com/aboutcode-org/scancode.io.git@v${SCANCODE_IO_VERSION}" \
-        "git+https://github.com/aboutcode-org/tree-sitter-swift-wheel.git@v${TREE_SITTER_SWIFT_VERSION}" \
-        "git+https://github.com/tree-sitter-grammars/tree-sitter-objc.git@v${TREE_SITTER_OBJC_VERSION}" \
-        "git+https://github.com/tree-sitter/py-tree-sitter.git@v${TREE_SITTER_VERSION}" \
-        "git+https://github.com/tree-sitter/tree-sitter-bash.git@v${TREE_SITTER_BASH_VERSION}" \
-        "git+https://github.com/tree-sitter/tree-sitter-c-sharp.git@v${TREE_SITTER_C_SHARP_VERSION}" \
-        "git+https://github.com/tree-sitter/tree-sitter-c.git@v${TREE_SITTER_C_VERSION}" \
-        "git+https://github.com/tree-sitter/tree-sitter-cpp.git@v${TREE_SITTER_CPP_VERSION}" \
-        "git+https://github.com/tree-sitter/tree-sitter-go.git@v${TREE_SITTER_GO_VERSION}" \
-        "git+https://github.com/tree-sitter/tree-sitter-java.git@v${TREE_SITTER_JAVA_VERSION}" \
-        "git+https://github.com/tree-sitter/tree-sitter-javascript.git@v${TREE_SITTER_JAVASCRIPT_VERSION}" \
-        "git+https://github.com/tree-sitter/tree-sitter-python.git@v${TREE_SITTER_PYTHON_VERSION}" \
-        "git+https://github.com/tree-sitter/tree-sitter-rust.git@v${TREE_SITTER_RUST_VERSION}"
+    && SOURCE_INSPECTOR_VERSION=$(echo "$SCANCODE_IO_PYPROJECT_TOML_FILE" | sed -nE "s|^.*source-inspector==([0-9.]+).*|\1|p") \
+    && wget -q "https://raw.githubusercontent.com/aboutcode-org/source-inspector/refs/tags/v${SOURCE_INSPECTOR_VERSION}/requirements.txt" \
+    && pip install "git+https://github.com/aboutcode-org/scancode.io.git@v${SCANCODE_IO_VERSION}" \
+    && pip install -r requirements.txt
 
 RUN dnf remove -y "$BUILD_DEPENDENCIES_DNF" \
     && dnf clean all \
