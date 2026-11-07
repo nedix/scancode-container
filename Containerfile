@@ -106,11 +106,11 @@ RUN SCANCODE_IO_PYPROJECT_TOML_FILE=$(wget -qO- "https://raw.githubusercontent.c
     && pip install "git+https://github.com/aboutcode-org/scancode.io.git@v${SCANCODE_IO_VERSION}" \
     && pip install -r requirements.txt
 
+WORKDIR /project/
+
 RUN dnf remove -y "$BUILD_DEPENDENCIES_DNF" \
     && dnf clean all \
     && pip uninstall -y $BUILD_DEPENDENCIES_PIP \
     && rm -rf /build/
-
-WORKDIR /project/
 
 ENTRYPOINT ["/usr/local/bin/scancode"]
