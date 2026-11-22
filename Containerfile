@@ -101,7 +101,7 @@ WORKDIR /build/scancode/
 ARG SCANCODE_IO_VERSION
 
 RUN SCANCODE_IO_PYPROJECT_TOML_FILE=$(wget -qO- "https://raw.githubusercontent.com/aboutcode-org/scancode.io/refs/tags/v${SCANCODE_IO_VERSION}/pyproject.toml") \
-    && SOURCE_INSPECTOR_VERSION=$(echo "$SCANCODE_IO_PYPROJECT_TOML_FILE" | sed -nE "s|^.*source-inspector==([0-9.]+).*|\1|p") \
+    && SOURCE_INSPECTOR_VERSION=$(echo "$SCANCODE_IO_PYPROJECT_TOML_FILE" | sed -nE "s|^.*source-inspector[=<>]{2}([0-9.]+).*|\1|p") \
     && wget -q "https://raw.githubusercontent.com/aboutcode-org/source-inspector/refs/tags/v${SOURCE_INSPECTOR_VERSION}/requirements.txt" \
     && pip install "git+https://github.com/aboutcode-org/scancode.io.git@v${SCANCODE_IO_VERSION}" \
     && pip install -r requirements.txt
